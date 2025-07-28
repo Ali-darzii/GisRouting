@@ -13,13 +13,15 @@ from src.models.gis import GisModel
 router = APIRouter(prefix="/gis")
 crud = GisCrud(GisModel)
 
-@router.get("/{color_id}")
+@router.get("/{color}")
 def get_by_color(
+    color:str,
     GisSchema:GisByColorSchema,
     db: Session = Depends(get_db)
     
 ) -> list:
     return crud.find_route(
         db,
-        GisSchema
+        GisSchema,
+        color
     )
