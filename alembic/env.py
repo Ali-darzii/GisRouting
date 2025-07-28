@@ -5,10 +5,11 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from src.config._config import SETTING
+from src.config import SETTING
 from src.utils.postgres import prepare_connection_string
 
 from src.models import *
+
 
 
 # this is the Alembic Config object, which provides

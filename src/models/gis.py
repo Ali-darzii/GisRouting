@@ -11,7 +11,7 @@ class GisModel(Base):
     color = Column(String(50), default="#000000")
     geom = Column(Geometry(geometry_type="LINESTRING", srid=4326))
     # for pgRouting
-    source = Column(Integer, nullable=True)        # node ID at start of line
-    target = Column(Integer, nullable=True)        # node ID at end of line
-    cost = Column(Float, nullable=True)            # forward traversal cost
-    reverse_cost = Column(Float, nullable=True)    # backward cost (for bidirectional graphs)
+    source = Column(Integer, nullable=True)     
+    target = Column(Integer, nullable=True)     
+    cost = Column(Float, nullable=True)         
+    reverse_cost = Column(Float, nullable=True) 

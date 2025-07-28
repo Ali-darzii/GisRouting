@@ -20,7 +20,7 @@ def get_by_color(
     db: Session = Depends(get_db)
     
 ) -> list:
-    return crud.find_route(
+    return crud.find_best_5_route_by_color(
         db,
         GisSchema,
         color
