@@ -5,7 +5,7 @@ from src.models.base import Base
 
 
 class GisModel(Base):
-    __tablename__ = "gis"
+    __tablename__ = "edges"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     color = Column(String(50), default="#000000")
