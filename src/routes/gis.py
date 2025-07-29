@@ -2,10 +2,10 @@ from fastapi.routing import APIRouter
 from fastapi import Depends
 from sqlalchemy.orm import Session
 from fastapi import status
-from typing import List
+from typing import Dict, List
 
 from src.core.db import get_db
-from src.schema.gis import GisSchema, GisNode
+from src.schema.gis import ConnectedLinesSchema, GisSchema, GisNode
 from src.crud.gis import GisCrud
 from src.models.gis import GisModel
 
@@ -39,19 +39,20 @@ def get_5_best_by_color(
         color
     )
     
-@router.get("/connected-lines/")
+@router.get("/connected-lines/", response_model=Dict[int, List[ConnectedLinesSchema]], status_code=status.HTTP_200_OK, response_model_by_alias=False)
 def get_all_connected_lines(
     db: Session = Depends(get_db)
-) -> dict:
+) -> Dict[int, List[ConnectedLinesSchema]]:
     return crud.get_all_connected_lines(
         db
     )
     
-@router.get("/connected-lines/{color}")
+@router.get("/connected-lines/{color}", response_model=Dict[int, List[ConnectedLinesSchema]], status_code=status.HTTP_200_OK, response_model_by_alias=False)
 def get_all_connected_lines_by_color(
     color:str,
     db: Session = Depends(get_db)
-) -> dict :
+) -> Dict[int, List[ConnectedLinesSchema]]:
+    color = "#" + color
     return crud.get_all_connected_lines_by_color(
         db, color
     )

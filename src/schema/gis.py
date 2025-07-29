@@ -40,4 +40,13 @@ class PropertiesSchema(BaseModel):
 class GisNode(BaseModel):
     properties: PropertiesSchema
     geometry: GeometrySchema
-    
+
+
+class ConnectedLinesSchema(BaseModel):
+    id: int
+    color: str
+    geom: dict  # <- match this to query result
+    source: int
+    target: int
+    cost: float
+    reverse_cost: float

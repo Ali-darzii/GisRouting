@@ -2,7 +2,7 @@ from src.models.gis import GisModel
 
 from sqlalchemy import text
 from sqlalchemy.orm import Session
-from src.schema.gis import GisSchema, PropertiesSchema, GeometrySchema
+from src.schema.gis import ConnectedLinesSchema, GisSchema, PropertiesSchema, GeometrySchema
 from src.schema.gis import GisNode
 from typing import List, Dict
 from collections import defaultdict
@@ -16,7 +16,7 @@ class GisCrud:
 
     def prepare_pgrout_network(self, db:Session) -> None:
         """
-        After every gis insert, must to make the graph. 
+        After every gis insert, must remove and calculate again. 
         """
         
         db.execute(text("TRUNCATE edges_vertices_pgr RESTART IDENTITY;"))
@@ -139,16 +139,16 @@ class GisCrud:
         """)).fetchall()
         grouped = defaultdict(list)
         for row in query:
-            edge = {
-                "id": row.id,
-                "color": row.color,
-                "geom": json.loads(row.geom),
-                "source": row.source,
-                "target": row.target,
-                "cost": row.cost,
-                "reverse_cost": row.reverse_cost
-            }
-            grouped[row.component].append(edge)
+            connected_lines = ConnectedLinesSchema(
+                id=row.id,
+                color=row.color,
+                geom=json.loads(row.geom),
+                source=row.source,
+                target=row.target,
+                cost=row.cost,
+                reverse_cost=row.reverse_cost,
+            ) 
+            grouped[row.component].append(connected_lines)
         return dict(grouped)
     
     def get_all_connected_lines_by_color(self, db:Session, color:str) -> dict:
@@ -173,14 +173,14 @@ class GisCrud:
         """)).fetchall()
         grouped = defaultdict(list)
         for row in query:
-            edge = {
-                "id": row.id,
-                "color": row.color,
-                "geom": json.loads(row.geom),
-                "source": row.source,
-                "target": row.target,
-                "cost": row.cost,
-                "reverse_cost": row.reverse_cost
-            }
-            grouped[row.component].append(edge)
+            connected_lines = ConnectedLinesSchema(
+                id=row.id,
+                color=row.color,
+                geom=json.loads(row.geom),
+                source=row.source,
+                target=row.target,
+                cost=row.cost,
+                reverse_cost=row.reverse_cost,
+            ) 
+            grouped[row.component].append(connected_lines)
         return dict(grouped)
