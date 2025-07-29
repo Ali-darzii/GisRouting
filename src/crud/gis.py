@@ -11,6 +11,10 @@ class GisCrud:
         self.model = model
 
     def prepare_pgrout_network(self, db:Session):
+        """
+        After every gis insert, must to make the graph. 
+        """
+        
         db.execute(text(f"""
                 SELECT pgr_createTopology('edges', {self.tolerance}, 'geom', 'id');
             """))
