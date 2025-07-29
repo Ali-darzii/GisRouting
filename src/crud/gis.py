@@ -2,8 +2,8 @@ from src.models.gis import GisModel
 from shapely.geometry import Point
 from sqlalchemy import text
 from sqlalchemy.orm import Session
-from src.schema.gis import GisSchema
-
+from src.schema.gis import GisSchema, PropertiesSchema, GeometrySchema
+from src.schema.gis import GisNode
 class GisCrud:
     tolerance = 0.00000001
 
@@ -34,16 +34,9 @@ class GisCrud:
         queries = db.execute(text(
         f"""
         SELECT 
-            e.id,
-            e.source,
-            e.target,
-            e.color,
-            e.cost,
-            e.reverse_cost,
-            ST_AsGeoJSON(e.geom)::json AS geometry,
-            dj.seq,
-            dj.cost AS segment_cost,
-            dj.agg_cost
+            e.id,e.source,e.target,e.color,e.cost,
+            e.reverse_cost,ST_AsGeoJSON(e.geom)::json AS geometry,
+            dj.seq,dj.cost AS segment_cost,dj.agg_cost
         FROM pgr_dijkstra(
             'SELECT id, source, target, cost, reverse_cost
              FROM edges
@@ -56,43 +49,35 @@ class GisCrud:
         """
         )).fetchall()
         result = []
-        for row in queries:
-            segment = {
-                "type": "Feature",
-                "properties": {
-                    "id": row.id,
-                    "source": row.source,
-                    "target": row.target,
-                    "color": row.color,
-                    "cost": row.cost,
-                    "reverse_cost": row.reverse_cost,
-                    "seq": row.seq,
-                    "segment_cost": row.segment_cost,
-                    "agg_cost": row.agg_cost
-                },
-                "geometry": row.geometry
-            }
-            result.append(segment)
+        if queries:
+            for row in queries:
+                result.append(GisNode(
+                    properties=PropertiesSchema(
+                        id=row.id,
+                        source=row.source,
+                        target=row.target,
+                        color=row.color,
+                        cost=row.cost,
+                        reverse_cost=row.reverse_cost,
+                        seq=row.seq,
+                        segment_cost=row.segment_cost,
+                        agg_cost=row.agg_cost,
+                    ),
+                    geometry=GeometrySchema(
+                        coordinates=row.geometry.get("coordinates")
+                    )
+                ))
         return result
-        
-    
     
     def find_best_5_route_by_color(self, db: Session, gis_schema: GisSchema, color: str):
-        start_node = self.finde_node(db, gis_schema.lng_source,gis_schema.lat_source)
-        end_node = self.finde_node(db, gis_schema.lng_destination,gis_schema.lat_destination)
+        start_node = self.finde_node(db, gis_schema.lng_source, gis_schema.lat_source)
+        end_node = self.finde_node(db, gis_schema.lng_destination, gis_schema.lat_destination)
         queries = db.execute(text(
         f"""
         SELECT 
-            e.id,
-            e.source,
-            e.target,
-            e.color,
-            e.cost,
-            e.reverse_cost,
-            ST_AsGeoJSON(e.geom)::json AS geometry,
-            dj.seq,
-            dj.cost AS segment_cost,
-            dj.agg_cost
+            e.id,e.source,e.target,e.color,e.cost,
+            e.reverse_cost,ST_AsGeoJSON(e.geom)::json AS geometry,dj.seq,
+            dj.cost AS segment_cost,dj.agg_cost
         FROM pgr_ksp(
             'SELECT id, source, target, cost, reverse_cost FROM edges WHERE color = ''{color}''',
             {start_node}, {end_node}, 5
@@ -102,23 +87,24 @@ class GisCrud:
         """
         )).fetchall()
         result = []
-        for row in queries:
-            segment = {
-                "type": "Feature",
-                "properties": {
-                    "id": row.id,
-                    "source": row.source,
-                    "target": row.target,
-                    "color": row.color,
-                    "cost": row.cost,
-                    "reverse_cost": row.reverse_cost,
-                    "seq": row.seq,
-                    "segment_cost": row.segment_cost,
-                    "agg_cost": row.agg_cost
-                },
-                "geometry": row.geometry
-            }
-            result.append(segment)
+        if queries:
+            for row in queries:
+                result.append(GisNode(
+                    properties=PropertiesSchema(
+                        id=row.id,
+                        source=row.source,
+                        target=row.target,
+                        color=row.color,
+                        cost=row.cost,
+                        reverse_cost=row.reverse_cost,
+                        seq=row.seq,
+                        segment_cost=row.segment_cost,
+                        agg_cost=row.agg_cost,
+                    ),
+                    geometry=GeometrySchema(
+                        coordinates=row.geometry.get("coordinates")
+                    )
+                ))
         return result
             
         

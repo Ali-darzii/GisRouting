@@ -1,5 +1,5 @@
 from pydantic import BaseModel, field_validator, model_validator
-
+from typing import List, Literal
 
 class GisSchema(BaseModel):
     lat_source:float
@@ -19,8 +19,25 @@ class GisSchema(BaseModel):
             return float(v)
         except (TypeError, ValueError):
             raise ValueError(f"Invalid float value: {v}")
-        
-    
-class GisByColorSchema(GisSchema):
-    color:str
+
+
+class GeometrySchema(BaseModel):
+    coordinates: List[List[float]]
+
+
+class PropertiesSchema(BaseModel):
+    id: int
+    source: int
+    target: int
+    color: str
+    cost: float
+    reverse_cost: float
+    seq: int
+    segment_cost: float
+    agg_cost: float
+
+
+class GisNode(BaseModel):
+    properties: PropertiesSchema
+    geometry: GeometrySchema
     
