@@ -23,6 +23,7 @@ crud = GisCrud(GisModel)
 def create_gis(body: GisSchema, db: Session = Depends(get_db)) -> GisModel:
     color = "#" + color
     return crud.crete_gis(
+        db,
         LineString(
             [
                 (body.lng_source,body.lat_source),
