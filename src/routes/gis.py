@@ -38,3 +38,20 @@ def get_5_best_by_color(
         params,
         color
     )
+    
+@router.get("/connected-lines/")
+def get_all_connected_lines(
+    db: Session = Depends(get_db)
+) -> dict:
+    return crud.get_all_connected_lines(
+        db
+    )
+    
+@router.get("/connected-lines/{color}")
+def get_all_connected_lines_by_color(
+    color:str,
+    db: Session = Depends(get_db)
+) -> dict :
+    return crud.get_all_connected_lines_by_color(
+        db, color
+    )

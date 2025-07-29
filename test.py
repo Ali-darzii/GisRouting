@@ -18,9 +18,9 @@ Session = sessionmaker(bind=engine)
 session = Session()
 
 def insert_data():
-    session.execute(text("DELETE FROM edges_vertices_pgr;"))
-    session.query(GisModel).delete()
-    session.commit()
+    # session.execute(text("DELETE FROM edges_vertices_pgr;"))
+    # session.query(GisModel).delete()
+    # session.commit()
 
     blue_lines = [
             LineString([(0, 0), (1, 1)]),  
@@ -47,24 +47,37 @@ def insert_data():
         LineString([(-2, 2), (-3, 3)]), 
     ]
 
-    for line in blue_lines:
-        session.add(GisModel(
-            color="#0000FF",
-            geom=from_shape(line, srid=4326),
-            cost=1,
-            reverse_cost=1
-        ))
+    # for line in blue_lines:
+    #     session.add(GisModel(
+    #         color="#0000FF",
+    #         geom=from_shape(line, srid=4326),
+    #         cost=1,
+    #         reverse_cost=1
+    #     ))
 
-    for line in black_lines_1 + black_lines_2:
+    # for line in black_lines_1 + black_lines_2:
+    #     session.add(GisModel(
+    #         color="#000000",
+    #         geom=from_shape(line, srid=4326),
+    #         cost=1,
+    #         reverse_cost=1
+    #     ))
+    new = [
+         LineString([(3, 3), (222,1432231.12223)]),
+         LineString([(222,1432231.12223), (224222.221223,422.12221132)]), 
+    ]
+    
+    for line in new:
         session.add(GisModel(
-            color="#000000",
+            color="#0011FF",
             geom=from_shape(line, srid=4326),
             cost=1,
             reverse_cost=1
         ))
 
     session.commit()
-
+    session.execute(text("TRUNCATE edges_vertices_pgr RESTART IDENTITY;"))
+    session.execute(text("UPDATE edges SET source = NULL, target = NULL;"))
     session.execute(text("SELECT pgr_createTopology('edges', 0.00001, 'geom', 'id');"))
     session.commit()
 
@@ -147,4 +160,4 @@ def check_data():
         }
         route_segments.append(segment)
     print(route_segments)
-check_data()
+insert_data()

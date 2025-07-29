@@ -1,26 +1,27 @@
 from src.models.gis import GisModel
-from shapely.geometry import Point
+
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 from src.schema.gis import GisSchema, PropertiesSchema, GeometrySchema
 from src.schema.gis import GisNode
+from typing import List, Dict
+from collections import defaultdict
+import json
+
 class GisCrud:
     tolerance = 0.00000001
 
     def __init__(self, model: type[GisModel]) -> None:
         self.model = model
 
-    def prepare_pgrout_network(self, db:Session):
+    def prepare_pgrout_network(self, db:Session) -> None:
         """
         After every gis insert, must to make the graph. 
         """
         
-        db.execute(text(f"""
-                SELECT pgr_createTopology('edges', {self.tolerance}, 'geom', 'id');
-            """))
-        db.execute(text(f"""
-                SELECT pgr_analyzeGraph('edges', {self.tolerance}, 'geom', 'id');
-            """))
+        db.execute(text("TRUNCATE edges_vertices_pgr RESTART IDENTITY;"))
+        db.execute(text("UPDATE edges SET source = NULL, target = NULL;"))
+        db.execute(text("SELECT pgr_createTopology('edges', 0.00001, 'geom', 'id');"))
         db.commit()
     
     def finde_node(self, db:Session, lat:float, lng:float):
@@ -32,7 +33,7 @@ class GisCrud:
         """    
         )).scalar()
     
-    def find_shortest_route_by_color(self, db: Session, gis_schema: GisSchema, color: str):
+    def find_shortest_route_by_color(self, db: Session, gis_schema: GisSchema, color: str) -> list:
         start_node = self.finde_node(db, gis_schema.lng_source,gis_schema.lat_source)
         end_node = self.finde_node(db, gis_schema.lng_destination,gis_schema.lat_destination)
         if not(start_node or end_node):
@@ -76,7 +77,7 @@ class GisCrud:
                 ))
         return result
     
-    def find_best_5_route_by_color(self, db: Session, gis_schema: GisSchema, color: str):
+    def find_best_5_route_by_color(self, db: Session, gis_schema: GisSchema, color: str) -> list:
         start_node = self.finde_node(db, gis_schema.lng_source, gis_schema.lat_source)
         end_node = self.finde_node(db, gis_schema.lng_destination, gis_schema.lat_destination)
         if not(start_node or end_node):
@@ -115,5 +116,71 @@ class GisCrud:
                     )
                 ))
         return result
-            
-        
+                
+    def get_all_connected_lines(self, db: Session) -> dict:
+        query = db.execute(text("""
+            WITH components AS (
+                SELECT * FROM pgr_connectedComponents(
+                    'SELECT id, source, target, cost, reverse_cost FROM edges'
+                )
+            )
+            SELECT
+                e.id, e.color, ST_AsGeoJSON(e.geom) AS geom,
+                e.source, e.target, e.cost,
+                e.reverse_cost, c.component
+            FROM
+                edges e
+            JOIN
+                components c
+                ON e.source = c.node
+            ORDER BY
+                c.component, e.id;
+
+        """)).fetchall()
+        grouped = defaultdict(list)
+        for row in query:
+            edge = {
+                "id": row.id,
+                "color": row.color,
+                "geom": json.loads(row.geom),
+                "source": row.source,
+                "target": row.target,
+                "cost": row.cost,
+                "reverse_cost": row.reverse_cost
+            }
+            grouped[row.component].append(edge)
+        return dict(grouped)
+    
+    def get_all_connected_lines_by_color(self, db:Session, color:str) -> dict:
+        query = db.execute(text(f"""
+            WITH components AS (
+                SELECT * FROM pgr_connectedComponents(
+                    'SELECT id, source, target, cost, reverse_cost FROM edges where color = ''{color}'''
+                )
+            )
+            SELECT
+                e.id, e.color, ST_AsGeoJSON(e.geom) AS geom,
+                e.source, e.target, e.cost,
+                e.reverse_cost, c.component
+            FROM
+                edges e
+            JOIN
+                components c
+                ON e.source = c.node
+            ORDER BY
+                c.component, e.id;
+
+        """)).fetchall()
+        grouped = defaultdict(list)
+        for row in query:
+            edge = {
+                "id": row.id,
+                "color": row.color,
+                "geom": json.loads(row.geom),
+                "source": row.source,
+                "target": row.target,
+                "cost": row.cost,
+                "reverse_cost": row.reverse_cost
+            }
+            grouped[row.component].append(edge)
+        return dict(grouped)
