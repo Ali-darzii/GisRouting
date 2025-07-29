@@ -35,6 +35,9 @@ class GisCrud:
     def find_shortest_route_by_color(self, db: Session, gis_schema: GisSchema, color: str):
         start_node = self.finde_node(db, gis_schema.lng_source,gis_schema.lat_source)
         end_node = self.finde_node(db, gis_schema.lng_destination,gis_schema.lat_destination)
+        if not(start_node or end_node):
+            return []
+        
         queries = db.execute(text(
         f"""
         SELECT 
@@ -76,6 +79,8 @@ class GisCrud:
     def find_best_5_route_by_color(self, db: Session, gis_schema: GisSchema, color: str):
         start_node = self.finde_node(db, gis_schema.lng_source, gis_schema.lat_source)
         end_node = self.finde_node(db, gis_schema.lng_destination, gis_schema.lat_destination)
+        if not(start_node or end_node):
+            return []
         queries = db.execute(text(
         f"""
         SELECT 
