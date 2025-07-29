@@ -7,6 +7,8 @@ from src.schema.gis import GisNode
 from typing import List, Dict
 from collections import defaultdict
 import json
+from shapely.geometry import LineString
+from geoalchemy2.shape import from_shape
 
 class GisCrud:
     tolerance = 0.00000001
@@ -14,6 +16,20 @@ class GisCrud:
     def __init__(self, model: type[GisModel]) -> None:
         self.model = model
 
+    def crete_gis(self, db:Session, line:LineString, color:str) :
+        try:
+            db_obj = GisModel(
+                color=color,
+                geom=from_shape(line, srid=4326),
+                cost=1,
+                reverse_cost=1
+            )  
+            db.add(db_obj)
+            db.commit
+        except Exception:
+            db.rollback()
+            raise
+    
     def prepare_pgrout_network(self, db:Session) -> None:
         """
         After every gis insert, must remove and calculate again. 
@@ -33,7 +49,7 @@ class GisCrud:
         """    
         )).scalar()
     
-    def find_shortest_route_by_color(self, db: Session, gis_schema: GisSchema, color: str) -> list:
+    def find_shortest_route_by_color(self, db: Session, gis_schema: GisSchema, color: str) -> List[GisNode]:
         start_node = self.finde_node(db, gis_schema.lng_source,gis_schema.lat_source)
         end_node = self.finde_node(db, gis_schema.lng_destination,gis_schema.lat_destination)
         if not(start_node or end_node):
@@ -77,7 +93,7 @@ class GisCrud:
                 ))
         return result
     
-    def find_best_5_route_by_color(self, db: Session, gis_schema: GisSchema, color: str) -> list:
+    def find_best_5_route_by_color(self, db: Session, gis_schema: GisSchema, color: str) -> List[GisNode]:
         start_node = self.finde_node(db, gis_schema.lng_source, gis_schema.lat_source)
         end_node = self.finde_node(db, gis_schema.lng_destination, gis_schema.lat_destination)
         if not(start_node or end_node):
@@ -117,7 +133,7 @@ class GisCrud:
                 ))
         return result
                 
-    def get_all_connected_lines(self, db: Session) -> dict:
+    def get_all_connected_lines(self, db: Session) -> Dict[int, List[ConnectedLinesSchema]]:
         query = db.execute(text("""
             WITH components AS (
                 SELECT * FROM pgr_connectedComponents(
@@ -151,7 +167,7 @@ class GisCrud:
             grouped[row.component].append(connected_lines)
         return dict(grouped)
     
-    def get_all_connected_lines_by_color(self, db:Session, color:str) -> dict:
+    def get_all_connected_lines_by_color(self, db:Session, color:str) -> Dict[int, List[ConnectedLinesSchema]]:
         query = db.execute(text(f"""
             WITH components AS (
                 SELECT * FROM pgr_connectedComponents(
