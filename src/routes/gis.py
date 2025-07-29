@@ -25,7 +25,7 @@ def get_5_best_by_color(
         params,
         color
     )
-@router.get("best/{color}", response_model=List[GisNode], status_code=status.HTTP_200_OK, response_model_by_alias=False)
+@router.get("/best/{color}", response_model=List[GisNode], status_code=status.HTTP_200_OK, response_model_by_alias=False)
 def get_5_best_by_color(
     color:str,
     params: GisSchema = Depends(),
