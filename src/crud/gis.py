@@ -44,7 +44,7 @@ class GisCrud:
         FROM pgr_dijkstra(
             'SELECT id, source, target, cost, reverse_cost
              FROM edges
-             WHERE color = ''#0000FF''',
+             WHERE color = ''{color}''',
             {start_node}, {end_node},
             directed := false
         ) AS dj
