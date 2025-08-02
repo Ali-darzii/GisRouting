@@ -27,26 +27,36 @@ def insert_data():
             LineString([(1, 1), (2, 2)]),  
             LineString([(2, 2), (3, 3)]),
             LineString([(3, 3), (4, 4)]),
-            # onother blue
-            LineString([(0, 0), (12, 12)]),
+            LineString([(4, 4), (5, 5)]),
+            
+            LineString([(3, 3), (16, 16)]),
+            LineString([(16, 16), (4, 4)]),
+                        
+            LineString([(2, 2), (12, 12)]),
             LineString([(12, 12), (14, 14)]),
-            LineString([(14, 14), (2,2)]),
-            LineString([(2, 2), (3, 3)]),
+            LineString([(14, 14), (15,15)]),
     ]
 
 
     black_lines_1 = [
         LineString([(2, 2), (3, 3)]),  
-        LineString([(3, 3), (4, 4)]), 
+        LineString([(3, 3), (4, 4)]),
+        LineString([(4, 4), (5, 5)]),
     ]
 
 
     black_lines_2 = [
-        LineString([(0, 0), (-1, 1)]),   
-        LineString([(-1, 1), (-2, 2)]),
-        LineString([(-2, 2), (-3, 3)]), 
+        LineString([(3, 3), (4, 4)]),   
+        LineString([(4, 4), (5, 5)]),
     ]
-
+    
+    new_yellow_line = [
+        # LineString([(222, 22233), (2342, 12342347)]),
+        # LineString([(2342, 12342347), (14211, 1002347)]),
+        LineString([(1, 1), (17, 17)]),
+        LineString([(17, 17), (18, 18)]),   
+    ]
+    
     # for line in blue_lines:
     #     session.add(GisModel(
     #         color="#0000FF",
@@ -62,22 +72,22 @@ def insert_data():
     #         cost=1,
     #         reverse_cost=1
     #     ))
-    new = [
-         LineString([(3, 3), (222,1432231.12223)]),
-         LineString([(222,1432231.12223), (224222.221223,422.12221132)]), 
-    ]
+    # new = [
+    #      LineString([(3, 3), (222,1432231.12223)]),
+    #      LineString([(222,1432231.12223), (224222.221223,422.12221132)]), 
+    # ]
     
-    for line in new:
+    for line in new_yellow_line:
         session.add(GisModel(
-            color="#0011FF",
+            color="#FFFF00",
             geom=from_shape(line, srid=4326),
             cost=1,
             reverse_cost=1
         ))
 
     session.commit()
-    session.execute(text("TRUNCATE edges_vertices_pgr RESTART IDENTITY;"))
-    session.execute(text("UPDATE edges SET source = NULL, target = NULL;"))
+    # session.execute(text("TRUNCATE edges_vertices_pgr RESTART IDENTITY;"))
+    # session.execute(text("UPDATE edges SET source = NULL, target = NULL;"))
     session.execute(text("SELECT pgr_createTopology('edges', 0.00001, 'geom', 'id');"))
     session.commit()
 

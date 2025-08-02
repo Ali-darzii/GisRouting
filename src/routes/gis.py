@@ -14,24 +14,27 @@ router = APIRouter(prefix="/gis")
 crud = GisCrud(GisModel)
 
 
-@router.post(
-    "",
-    response_model=GisModel,
-    status_code=status.HTTP_200_OK,
-    response_model_by_alias=False,
-)
-def create_gis(body: GisSchema, db: Session = Depends(get_db)) -> GisModel:
-    color = "#" + color
-    return crud.crete_gis(
-        db,
-        LineString(
-            [
-                (body.lng_source,body.lat_source),
-                (body.lng_destination, body.lat_destination),
-            ]
-        ),
-        body.color
-    )
+# @router.post(
+#     "",
+#     response_model=GisModel,
+#     status_code=status.HTTP_200_OK,
+#     response_model_by_alias=False,
+# )
+# def create_gis(
+#     body: GisSchema,
+#     db: Session = Depends(get_db)
+# ) -> GisModel:
+#     color = "#" + color
+#     return crud.crete_gis(
+#         db,
+#         LineString(
+#             [
+#                 (body.lng_source,body.lat_source),
+#                 (body.lng_destination, body.lat_destination),
+#             ]
+#         ),
+#         body.color
+#     )
 
 
 @router.get(
@@ -53,7 +56,7 @@ def get_5_best_by_color(
     status_code=status.HTTP_200_OK,
     response_model_by_alias=False,
 )
-def get_5_best_by_color(
+def get_best_by_color(
     color: str, params: GisSchema = Depends(), db: Session = Depends(get_db)
 ) -> List[GisNode]:
     color = "#" + color

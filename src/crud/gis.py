@@ -35,7 +35,7 @@ class GisCrud:
         After every gis insert, must remove and calculate again. 
         """
         
-        db.execute(text("TRUNCATE edges_vertices_pgr RESTART IDENTITY;"))
+        db.execute(text("TRUNCATE edges_vertices_pgr RESTART IDENTITY;"))  
         db.execute(text("UPDATE edges SET source = NULL, target = NULL;"))
         db.execute(text("SELECT pgr_createTopology('edges', 0.00001, 'geom', 'id');"))
         db.commit()
@@ -183,6 +183,7 @@ class GisCrud:
             JOIN
                 components c
                 ON e.source = c.node
+            where color = '{color}'
             ORDER BY
                 c.component, e.id;
 

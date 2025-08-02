@@ -9,7 +9,7 @@ class GisModel(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     color = Column(String(50), default="#000000")
-    geom = Column(Geometry(geometry_type="LINESTRING", srid=4326))
+    geom = Column(Geometry(geometry_type="LINESTRING", srid=4326), index=True)
     # for pgRouting
     source = Column(Integer, nullable=True)     
     target = Column(Integer, nullable=True)     
